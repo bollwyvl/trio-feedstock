@@ -1,49 +1,78 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
 schema_version: 1
 
 context:
   version: 0.35.0
+  # check an annual "latest" python instead of the "*", or "any" python
+  python_check_max: "3.15"
+  # keep a coverage baseline to detect new "optional" dependency changes, etc.
+  cov_fail_under: "100"
 
 package:
   name: trio
   version: ${{ version }}
 
 source:
-  url: https://pypi.org/packages/source/t/trio/trio-${{ version }}.tar.gz
+  url: https://files.pythonhosted.org/packages/source/t/trio/trio-${{ version }}.tar.gz
   sha256: 7efb295c78a0ecd1235c5759e620b5da564ca80d2efcb0055423588547248b96
 
 build:
-  number: 1
-  skip: match(python, "<3.10")
-  script: ${{ PYTHON }} -m pip install . --no-deps --no-build-isolation -vv
+  number: 2
+  noarch: python
+  script:
+    - ${{ PYTHON }} -m pip install -vv . --no-deps --no-build-isolation --check-build-dependencies
 
 requirements:
-  build:
-    - if: build_platform != target_platform
-      then:
-        - python
-        - cross-python_${{ target_platform }}
   host:
-    - python
+    - python ${{ python_min }}.*
     - pip
-    - setuptools >=64
+    - setuptools >=77
   run:
-    - python
+    - __${{ noarch_platform }}
     - attrs >=23.2.0
-    - sortedcontainers
     - idna
     - outcome
+    - python >=${{ python_min }}
     - sniffio >=1.3.0
-    - if: win and not python_impl == 'pypy'
-      then: cffi >=1.14
-    - if: match(python, "<3.11")
-      then: exceptiongroup
-    - cffi >=1.14
+    - sortedcontainers
+    - if: noarch_platform == "win"
+      then:
+        - cffi >=1.14
 tests:
+  - package_contents:
+      strict: true
+      files:
+        - etc/conda/test-files/trio/**
+      site_packages:
+        - trio/**
+        - trio-${{ version }}.dist-info/**
   - python:
       imports:
         - trio
         - trio.testing
       pip_check: true
+      python_version:
+        - ${{ python_min }}.*
+        - ${{ python_check_max }}.*
+  - files:
+      source:
+        - pyproject.toml
+        - tests/**
+    requirements:
+      run:
+        - async_generator >=1.9
+        - coverage >=7.15.0
+        - cryptography >=41.0.0
+        - jedi
+        - pylint
+        - pyopenssl >=22.0.0
+        - pyright
+        - pytest >=8.4
+        - python ${{ python_min }}.*
+        - trustme
+    script:
+      - coverage run --source=trio --branch -m pytest -vv --tb=long -m "not redistributors_should_skip"
+      - coverage report --show-missing --skip-covered --fail-under=${{ cov_fail_under }}
 
 about:
   license: MIT
