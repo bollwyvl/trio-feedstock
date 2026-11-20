@@ -3,9 +3,9 @@ About trio-feedstock
 
 Feedstock license: [BSD-3-Clause](https://github.com/conda-forge/trio-feedstock/blob/main/LICENSE.txt)
 
-Home: https://github.com/python-trio/trio
+Home: https://pypi.org/project/trio
 
-Package license: MIT
+Package license: Apache-2.0 OR MIT
 
 Summary: An async/await-native I/O library for humans and snake people
 
@@ -191,6 +191,7 @@ In order to produce a uniquely identifiable distribution:
 Feedstock Maintainers
 =====================
 
+* [@bollwyvl](https://github.com/bollwyvl/)
 * [@dhirschfeld](https://github.com/dhirschfeld/)
 * [@nicoddemus](https://github.com/nicoddemus/)
 * [@synapticarbors](https://github.com/synapticarbors/)
